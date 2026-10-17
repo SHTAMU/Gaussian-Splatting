@@ -6,3 +6,14 @@ diff_rasterization/diff_rast.egg-info
 diff_rasterization/dist
 tensorboard_3d
 screenshots
+# ignore data and output result
+data_hw1/
+output/
+*.tar.gz
+*.out
+*.png
+
+# ignore Python virtual enviroment
+test_env/
+venv/
+.venv/
