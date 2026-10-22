@@ -13,9 +13,15 @@
 
 ## 📌 Executive Summary
 
-This repository presents an end-to-end, reproducible **3D Scene Reconstruction and Novel View Synthesis (NVS)** pipeline leveraging **Structure-from-Motion (COLMAP)** and **3D Gaussian Splatting (3DGS)**. 
+This repository contains an end-to-end pipeline for 3D scene reconstruction and novel view synthesis (NVS). The pipeline uses Structure-from-Motion (COLMAP) and 3D Gaussian Splatting (3DGS).
 
-Targeting high-performance compute environments, this project integrates automated **SLURM batch workflows** on the **TAMU Grace HPC Cluster (NVIDIA A100-PCIE-40GB)** to handle sparse outdoor multi-view imagery. The pipeline encompasses sparse feature matching, camera pose estimation, differentiable 3D Gaussian radiance field optimization (30,000 iterations), held-out view evaluation, and quantitative error diagnostics (PSNR, SSIM, LPIPS).
+We designed this project for high-performance computing (HPC) environments. The project uses automated SLURM scripts on the TAMU Grace HPC Cluster. The cluster uses NVIDIA A100-PCIE-40GB GPUs. The pipeline reconstructs scenes from sparse outdoor images. 
+
+The complete workflow includes:
+- Feature matching and camera pose recovery
+- Optimization of the 3D Gaussian scene (30,000 iterations)
+- Evaluation of held-out test views
+- Quantitative error measurement (PSNR, SSIM, and LPIPS).
 
 ---
 
@@ -35,41 +41,46 @@ Targeting high-performance compute environments, this project integrates automat
 
 ---
 
-## 🚀 Key Engineering & Implementation Highlights
+## 🚀 Key Engineering Highlights
 
-1. **HPC SLURM Automation (`*.slurm` scripts):**
-   - Engineered scalable SLURM execution scripts (`run_colmap.slurm`, `run_train.slurm`, `run_eval.slurm`) tailored for distributed A100 compute nodes, preventing VRAM out-of-memory spikes and orchestrating automated dependency chains.
-2. **Strict 1-in-8 Evaluation Protocol:**
-   - Evaluated under standard novel view synthesis benchmarks: every 8th camera view (`images: 0, 8, 16`) was held out as unseen ground truth, ensuring zero-leakage test metrics.
-3. **Reproducibility & Verification Tools:**
-   - Built custom diagnostic utilities (`check_data.py`, `test_env.py`, `verify_gpu.slurm`) to validate CUDA runtime bindings, tensor memory allocation, and COLMAP undistorted image-camera pose correspondences prior to optimization.
+1. **SLURM Batch Automation (`*.slurm` scripts):**
+   - We developed SLURM batch scripts (`run_colmap.slurm`, `run_train.slurm`, `run_eval.slurm`) for distributed NVIDIA A100 nodes.
+   - These scripts prevent GPU out-of-memory errors and manage execution sequences automatically.
+
+2. **Standard Evaluation Protocol (1-in-8 Split):**
+   - We evaluated novel view synthesis with a standard benchmark.
+   - Every eighth camera image (`images: 0, 8, 16`) was kept as a test view. This step prevents data leakage during training.
+
+3. **System Diagnostic Tools:**
+   - We created diagnostic scripts (`check_data.py`, `test_env.py`, `verify_gpu.slurm`).
+   - These tools verify the CUDA environment, GPU memory state, and camera poses before optimization.
 
 ---
 
-## 📊 Quantitative Benchmarks & Results
+## 📊 Quantitative Benchmarks
 
-Optimization was executed on a real-world outdoor bronze statue sequence (20 multi-view images total: 17 training, 3 test views).
+We optimized the model on an outdoor sequence of a bronze statue. The dataset contains 20 images (17 training views and 3 test views).
 
-| Metric | Result (Ours) | Baseline Expectation | Interpretation |
+| Metric | Result (Ours) | Target Baseline | Analysis |
 | :--- | :---: | :---: | :--- |
 | **PSNR (Peak Signal-to-Noise Ratio)** | **21.10 dB** | $> 20.0\text{ dB}$ | High structural reconstruction fidelity |
-| **SSIM (Structural Similarity)** | **0.799** | $> 0.750$ | Preserves high-frequency spatial context |
-| **LPIPS (Perceptual Distance)** | **0.207** | $< 0.250$ | Low perceptual error (VGG perceptual metric) |
-| **Training Latency** | **~6m 28s** | ~30–45 mins (standard GPU) | **30,000 iters accelerated on NVIDIA A100** |
+| **SSIM (Structural Similarity)** | **0.799** | $> 0.750$ | Correct preservation of high-frequency contours |
+| **LPIPS (Perceptual Distance)** | **0.207** | $< 0.250$ | Low perceptual error (VGG perceptual network) |
+| **Optimization Latency** | **~6m 28s** | ~35–45 mins | Accelerated run on NVIDIA A100 (30,000 iters) |
 
 ---
 
-## 🖼️ Qualitative Results & Novel View Synthesis
+## 🖼️ Qualitative Results
 
-### 1. Held-Out Novel View Synthesis (Test Camera)
-Comparison between the held-out ground truth view and the novel view synthesized by 3DGS (30,000 iterations):
+### 1. Held-Out Novel View Synthesis
+This section compares the held-out test view and the 3DGS rendering after 30,000 iterations:
 
 | Ground Truth (Test View) | 3DGS Novel-View Rendering (Ours) |
 | :---: | :---: |
 | <img src="assets/Ground%20truth.png" width="450"/> | <img src="assets/3DGS%20Rendering.png" width="450"/> |
 
 ### 2. Global Radiance Field Geometry
-Visual inspection of the reconstructed 3D Gaussian scene (ellipsoids) via the SIBR interactive viewer:
+The image below shows the 3D Gaussian ellipsoids in the SIBR interactive viewer:
 
 <p align="center">
   <img src="assets/reconstructed%203D%20Gaussian%20scene.png" width="750"/>
@@ -77,33 +88,32 @@ Visual inspection of the reconstructed 3D Gaussian scene (ellipsoids) via the SI
 
 ---
 
-## 🔍 Technical Diagnosis & Failure Mode Analysis
+## 🔍 Technical Diagnosis and Artifact Analysis
 
-While the pipeline achieved strong overall structural fidelity, critical artifacts were observed and technically diagnosed:
+1. **Under-Constrained Ray Optimization in Sparse Baselines:**
+   - *Observation:* Thin structures (such as horse ears and fine contours) show lower opacity and localized blur.
+   - *Cause:* The dataset contains only 17 training images. This small number of images provides limited angular overlap. Fewer than two camera rays observe some spatial regions. This condition causes depth ambiguity during backpropagation.
 
-1. **Under-Constrained Ray Optimization under Sparse Baseline:**
-   - *Observation:* Thin structures (e.g., horse ears/head edges) exhibit partial opacity loss and slight geometric blur.
-   - *Root Cause:* Training with only 17 images provides insufficient angular overlap for wide-baseline parallax. Certain spatial voxels are intersected by fewer than 2 camera rays, leading to depth ambiguity during gradient backpropagation.
-2. **Needle-like Floaters (Spatial Anisotropy Distortion):**
-   - *Observation:* Inspecting the global 3D viewer reveals elongated, needle-like Gaussian ellipsoids stretching into empty background regions.
-   - *Root Cause:* The 3DGS adaptive density control mechanism splits and clones Gaussians based on 2D view-space positional gradients (`densify_grad_threshold = 0.0002`). Without multi-view geometric depth regularization, Gaussians overfit to match training view colors by extending along null-space viewing frustums.
+2. **Needle-Like Floaters (Density Overfitting):**
+   - *Observation:* The global 3D viewer shows elongated, needle-like Gaussian shapes in empty background areas.
+   - *Cause:* The density control splits Gaussians based on 2D position gradients (`densify_grad_threshold = 0.0002`). Without geometric depth constraints, Gaussians expand along camera viewing rays to match training colors.
 
 ---
 
 ## 🛠️ Environment Setup & Quickstart
 
-### 1. Environment Initialization
+### 1. Environment Setup
 
 ```bash
-# Clone repository recursively with submodules
-git clone https://github.com/SHTAMU/Gaussian-Splatting.git --recursive
+# Clone the repository with submodules
+git clone [https://github.com/SHTAMU/Gaussian-Splatting.git](https://github.com/SHTAMU/Gaussian-Splatting.git) --recursive
 cd Gaussian-Splatting
 
-# Setup Conda environment
+# Create and activate the Conda environment
 conda env create -f environment.yml
 conda activate gaussian_splatting
 
-# Validate GPU & CUDA runtime
+# Verify the GPU and CUDA environment
 python test_env.py
 ```
 
