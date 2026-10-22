@@ -96,7 +96,7 @@ While the pipeline achieved strong overall structural fidelity, critical artifac
 
 ```bash
 # Clone repository recursively with submodules
-git clone [https://github.com/SHTAMU/Gaussian-Splatting.git](https://github.com/SHTAMU/Gaussian-Splatting.git) --recursive
+git clone https://github.com/SHTAMU/Gaussian-Splatting.git --recursive
 cd Gaussian-Splatting
 
 # Setup Conda environment
