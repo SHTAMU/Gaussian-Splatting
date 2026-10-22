@@ -59,19 +59,21 @@ Optimization was executed on a real-world outdoor bronze statue sequence (20 mul
 
 ---
 
-## 🖼️ Visual Results & Novel View Synthesis
+## 🖼️ Qualitative Results & Novel View Synthesis
 
-### 1. Held-out Novel View Synthesis Comparison
-Comparison between the held-out test camera viewpoint (unseen during training) and the 3DGS rendering at 30,000 iterations:
+### 1. Held-Out Novel View Synthesis (Test Camera)
+Comparison between the held-out ground truth view and the novel view synthesized by 3DGS (30,000 iterations):
 
 | Ground Truth (Test View) | 3DGS Novel-View Rendering (Ours) |
 | :---: | :---: |
-| ![Ground Truth](assets/recon_comparison.png) | *(Rendered at 1080p, PSNR: 21.10 dB)* |
+| <img src="assets/Ground%20truth.png" width="450"/> | <img src="assets/3DGS%20Rendering.png" width="450"/> |
 
-### 2. Global Radiance Field & Spatial Geometry
-Inspection in the SIBR interactive viewer showing the overall 3D Gaussian ellipsoid distribution:
+### 2. Global Radiance Field Geometry
+Visual inspection of the reconstructed 3D Gaussian scene (ellipsoids) via the SIBR interactive viewer:
 
-![Global Viewer](assets/global_viewer.png)
+<p align="center">
+  <img src="assets/reconstructed%203D%20Gaussian%20scene.png" width="750"/>
+</p>
 
 ---
 
