@@ -93,9 +93,10 @@ While the pipeline achieved strong overall structural fidelity, critical artifac
 ## 🛠️ Environment Setup & Quickstart
 
 ### 1. Environment Initialization
+
 ```bash
 # Clone repository recursively with submodules
-git clone [https://github.com/SHTAMU/Gaussian-Splatting.git](https://github.com/SHTAMU/Gaussian-Splatting.git) --recursive
+git clone https://github.com/SHTAMU/Gaussian-Splatting.git --recursive
 cd Gaussian-Splatting
 
 # Setup Conda environment
@@ -103,18 +104,6 @@ conda env create -f environment.yml
 conda activate gaussian_splatting
 
 # Validate GPU & CUDA runtime
-python test_env.py
-2. SLURM HPC Execution (TAMU Grace Cluster)
-Bash
-# Step 1: Run COLMAP SfM pose estimation
-sbatch run_colmap.slurm
-
-# Step 2: Run 3DGS training (with 1-in-8 evaluation split)
-sbatch run_train.slurm
-
-# Step 3: Render held-out test views and compute PSNR/SSIM/LPIPS
-sbatch run_eval.slurm
-📚 References
-Kerbl, B., Kopanas, G., Leimkuehler, T., & Drettakis, G. (2023). 3D Gaussian Splatting for Real-Time Radiance Field Rendering. ACM Transactions on Graphics (SIGGRAPH 2023).
+python test_env.pyField Rendering. ACM Transactions on Graphics (SIGGRAPH 2023).
 
 Schönberger, J. L., & Frahm, J. M. (2016). Structure-from-Motion Revisited. IEEE Conference on Computer Vision and Pattern Recognition (CVPR 2016).
