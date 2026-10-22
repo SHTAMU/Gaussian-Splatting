@@ -27,16 +27,27 @@ The complete workflow includes:
 
 ## 🔬 Pipeline Architecture
 
-[Raw Multi-View Images]
-│
-▼  (Task 1: Camera Pose Estimation)
-[COLMAP SfM Pipeline] ──> Feature Extraction & Exhaustive Matching ──> Sparse 3D Point Cloud & Poses
-│
-▼  (Task 2: Scene Splatting Optimization)
-[3DGS Optimization]   ──> Adaptive Density Control & Spherical Harmonics (30k Iterations on A100)
-│
-▼  (Task 3: Quantitative & Qualitative Evaluation)
-[Held-out Evaluation] ──> 1-in-8 Test Split (PSNR / SSIM / LPIPS) + SIBR Interactive Viewer Inspection
+```text
+┌──────────────────────────┐
+│  Raw Multi-View Images   │ (Outdoor Sequence: 17 Training Views + 3 Held-Out Views)
+└─────────────┬────────────┘
+              │
+              ▼  [Stage 1: Camera Pose & Sparse Structure Recovery]
+┌──────────────────────────┐
+│    COLMAP SfM Engine     │ ──► SIFT Feature Extraction & Exhaustive Feature Matching
+└─────────────┬────────────┘ ──► Sparse Bundle Adjustment: Camera Poses (R, t) & Point Cloud
+              │
+              ▼  [Stage 2: Differentiable 3D Radiance Field Optimization]
+┌──────────────────────────┐
+│ 3D Gaussian Splatting    │ ──► Anisotropic Covariance Parameterization & Fast Tile Rasterization
+│  (30k Iters on A100)     │ ──► Adaptive Density Control (Gradient-driven Clone, Split & Prune)
+└─────────────┬────────────┘ ──► View-Dependent Radiance Transfer via Spherical Harmonics (SH)
+              │
+              ▼  [Stage 3: Novel View Synthesis & Quantitative Metrology]
+┌──────────────────────────┐
+│   Held-Out Evaluation    │ ──► 1-in-8 Test Split Rendering (Strict Zero Data Leakage)
+│  & Visual Diagnostics    │ ──► Quantitative Error Analysis: PSNR (21.10 dB), SSIM (0.799), LPIPS (0.207)
+└──────────────────────────┘ ──► Real-Time Spatial Inspection via SIBR Interactive Viewers
 
 
 ---
