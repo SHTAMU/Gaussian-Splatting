@@ -8,11 +8,17 @@
 #SBATCH --mem=8G
 #SBATCH --output=verify_gpu_%j.out
 
+# 1. Load compiler, MPI, and CUDA modules
 module purge
 module load GCC/11.3.0 OpenMPI/4.1.4 CUDA/11.8.0
+module load Anaconda3
 
-# 1. 顯示分配到的 GPU 硬體資訊
+# Activate Conda environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate gaussian_splatting
+
+# 2. Inspect allocated GPU hardware
 nvidia-smi
 
-# 2. 使用虛擬環境中的 Python 絕對路徑直接執行
-/scratch/user/shihyuyang/conda_envs/gaussian_splatting/bin/python test_env.py
+# 3. Run PyTorch CUDA and environment diagnostic script
+python test_env.py
