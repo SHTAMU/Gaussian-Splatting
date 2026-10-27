@@ -8,21 +8,26 @@
 #SBATCH --mem=16G
 #SBATCH --output=eval_%j.out
 
-# 1. 載入編譯與 CUDA 環境
+# 1. Load compiler, MPI, and CUDA runtime
 module purge
 module load GCC/11.3.0 OpenMPI/4.1.4 CUDA/11.8.0
+module load Anaconda3
 
-# 讓運算節點去 Scratch 讀取 LPIPS 權重，避免再去 /home 找而報錯
-export TORCH_HOME=/scratch/user/shihyuyang/.cache/torch
+# Activate Conda environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate gaussian_splatting
 
-# 2. 渲染新視角 (renders)
-echo "=== 開始執行渲染 (render.py) ==="
-/scratch/user/shihyuyang/conda_envs/gaussian_splatting/bin/python render.py \
-    -m output/hw1_model
+# Point Torch cache to SCRATCH to avoid quota limits in home directory
+export TORCH_HOME="${SCRATCH:-$HOME}/.cache/torch"
 
-# 3. 計算評估指標 PSNR, SSIM, LPIPS (metrics)
-echo "=== 開始計算評估指標 (metrics.py) ==="
-/scratch/user/shihyuyang/conda_envs/gaussian_splatting/bin/python metrics.py \
-    -m output/hw1_model
+# 2. Render novel test views from the trained model
+echo "=== Step 1: Rendering test viewpoints (render.py) ==="
+python render.py \
+    -m output/bronze_statue
 
-echo "=== 評估完成！ ==="
+# 3. Compute quantitative metrics: PSNR, SSIM, and LPIPS
+echo "=== Step 2: Computing quantitative metrics (metrics.py) ==="
+python metrics.py \
+    -m output/bronze_statue
+
+echo "=== Evaluation completed successfully! ==="
