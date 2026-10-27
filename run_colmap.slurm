@@ -14,5 +14,5 @@ module load COLMAP/3.8
 
 export QT_QPA_PLATFORM=offscreen
 
-# 加上 --no_gpu 參數，改用 CPU 處理 20 張影像特徵，避免無頭伺服器 OpenGLContextManager 崩潰
-/scratch/user/shihyuyang/conda_envs/gaussian_splatting/bin/python convert.py -s data_hw1 --no_gpu
+# Run COLMAP conversion with CPU-based feature extraction to avoid OpenGLContextManager crashes
+python convert.py -s data --no_gpu
