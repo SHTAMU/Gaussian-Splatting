@@ -8,18 +8,23 @@
 #SBATCH --mem=32G
 #SBATCH --output=train_%j.out
 
-# 1. 載入編譯環境與 CUDA
+# 1. Load compiler modules and CUDA runtime
 module purge
 module load GCC/11.3.0 OpenMPI/4.1.4 CUDA/11.8.0
+module load Anaconda3
 
-# 2. 顯示分配到的 GPU
+# Activate Conda environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate gaussian_splatting
+
+# 2. Check allocated GPU resources
 nvidia-smi
 
-# 3. 執行 3D Gaussian Splatting 訓練
-# -s 指定資料集目錄
-# -m 指定訓練權重與點雲的輸出目錄
-# 預設會迭代 30,000 步（20 張影像在 A100 約只需 10~15 分鐘）
-/scratch/user/shihyuyang/conda_envs/gaussian_splatting/bin/python train.py \
-    -s data_hw1 \
-    -m output/hw1_model \
+# 3. Train 3D Gaussian Splatting model
+# -s: source dataset directory
+# -m: output directory for trained checkpoints and point cloud PLY
+# --eval: enable standard 1-in-8 train/test split evaluation protocol
+python train.py \
+    -s data \
+    -m output/bronze_statue \
     --eval
