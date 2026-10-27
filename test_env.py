@@ -10,20 +10,20 @@ if torch.cuda.is_available():
     print("Current GPU Device:", torch.cuda.get_device_name(0))
     print("GPU Memory Total:", f"{torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f} GB")
 else:
-    print("[ERROR] PyTorch 無法存取 GPU！")
+    print("[ERROR] PyTorch can not read GPU！")
     sys.exit(1)
 
 try:
     import diff_gaussian_rasterization
-    print("[SUCCESS] diff-gaussian-rasterization 載入成功！")
+    print("[SUCCESS] diff-gaussian-rasterization load success！")
 except ImportError as e:
-    print("[ERROR] diff-gaussian-rasterization 載入失敗:", e)
+    print("[ERROR] diff-gaussian-rasterization load fail:", e)
 
 try:
     import simple_knn
-    print("[SUCCESS] simple-knn 載入成功！")
+    print("[SUCCESS] simple-knn load success！")
 except ImportError as e:
-    print("[ERROR] simple-knn 載入失敗:", e)
+    print("[ERROR] simple-knn load fail:", e)
 
 print("=" * 50)
-print("環境驗證成功！")
+print("environment success！")
